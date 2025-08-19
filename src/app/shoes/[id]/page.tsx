@@ -1,4 +1,3 @@
-// src/app/shoes/[id]/page.tsx
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 
@@ -30,15 +29,14 @@ function firstOrNull<T>(v: T | T[] | null | undefined): T | null {
   return Array.isArray(v) ? v[0] ?? null : v;
 }
 
-type Params = { params: { id: string } };
-
-export default async function ShoeDetailsPage({ params }: Params) {
-  const { id } = params;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default async function ShoeDetailsPage(props: any) {
+  // Next App Router sometimes provides params as a promise — unwrap safely.
+  const { id } = (await props.params) as { id: string };
 
   const { data, error } = await supabase
     .from('shoe_versions')
-    .select(
-      `
+    .select(`
       id,
       version_name,
       release_year,
@@ -55,8 +53,7 @@ export default async function ShoeDetailsPage({ params }: Params) {
         stack_height_forefoot,
         drop
       )
-    `
-    )
+    `)
     .eq('id', id)
     .single();
 
@@ -71,7 +68,6 @@ export default async function ShoeDetailsPage({ params }: Params) {
     );
   }
 
-  // Type the row explicitly and normalize relations without `any`
   const row = (data ?? null) as QueryRow | null;
   const shoe = firstOrNull(row?.shoes);
   const spec = firstOrNull(row?.specs);
@@ -101,21 +97,11 @@ export default async function ShoeDetailsPage({ params }: Params) {
             </tr>
           </thead>
           <tbody>
-            <Tr label="Weight (Men)">
-              {spec?.weight_men != null ? `${spec.weight_men} g` : '—'}
-            </Tr>
-            <Tr label="Weight (Women)">
-              {spec?.weight_women != null ? `${spec.weight_women} g` : '—'}
-            </Tr>
-            <Tr label="Stack (Heel)">
-              {spec?.stack_height_heel != null ? `${spec.stack_height_heel} mm` : '—'}
-            </Tr>
-            <Tr label="Stack (Forefoot)">
-              {spec?.stack_height_forefoot != null ? `${spec.stack_height_forefoot} mm` : '—'}
-            </Tr>
-            <Tr label="Drop">
-              {spec?.drop != null ? `${spec.drop} mm` : '—'}
-            </Tr>
+            <Tr label="Weight (Men)">{spec?.weight_men != null ? `${spec.weight_men} g` : '—'}</Tr>
+            <Tr label="Weight (Women)">{spec?.weight_women != null ? `${spec.weight_women} g` : '—'}</Tr>
+            <Tr label="Stack (Heel)">{spec?.stack_height_heel != null ? `${spec.stack_height_heel} mm` : '—'}</Tr>
+            <Tr label="Stack (Forefoot)">{spec?.stack_height_forefoot != null ? `${spec.stack_height_forefoot} mm` : '—'}</Tr>
+            <Tr label="Drop">{spec?.drop != null ? `${spec.drop} mm` : '—'}</Tr>
           </tbody>
         </table>
       </div>
@@ -131,18 +117,10 @@ function Th({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Tr({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function Tr({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <tr className="odd:bg-white even:bg-gray-50">
-      <td className="px-3 py-2 border-b border-gray-200 w-48 font-medium">
-        {label}
-      </td>
+      <td className="px-3 py-2 border-b border-gray-200 w-48 font-medium">{label}</td>
       <td className="px-3 py-2 border-b border-gray-200">{children}</td>
     </tr>
   );
