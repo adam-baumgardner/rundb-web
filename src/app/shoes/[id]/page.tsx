@@ -82,15 +82,15 @@ export default async function ShoeDetailsPage(props: any) {
         {shoe?.brand} {shoe?.model_name} {row?.version_name ? `(${row.version_name})` : ''}
       </h1>
 
-      <div className="text-sm text-gray-600">
+      <div className="text-sm text-gray-900">
         <div>Year: {row?.release_year ?? '—'}</div>
         <div>Terrain: {shoe?.terrain ?? '—'}</div>
         <div>Category: {shoe?.category ?? '—'}</div>
       </div>
 
       <div className="rounded-lg border">
-        <table className="min-w-[500px] w-full text-sm">
-          <thead className="bg-gray-50">
+        <table className="min-w-[700px] w-full text-[15px] leading-6 text-gray-900">
+          <thead className="bg-gray-100 text-gray-900">
             <tr>
               <Th>Spec</Th>
               <Th>Value</Th>
@@ -111,7 +111,7 @@ export default async function ShoeDetailsPage(props: any) {
 
 function Th({ children }: { children: React.ReactNode }) {
   return (
-    <th className="px-3 py-2 text-left font-medium border-b border-gray-200">
+    <th className="px-3 py-2 text-left font-medium border-b text-gray-900">
       {children}
     </th>
   );
@@ -120,8 +120,8 @@ function Th({ children }: { children: React.ReactNode }) {
 function Tr({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <tr className="odd:bg-white even:bg-gray-50">
-      <td className="px-3 py-2 border-b border-gray-200 w-48 font-medium">{label}</td>
-      <td className="px-3 py-2 border-b border-gray-200">{children}</td>
+      <td className="px-3 py-2 border-b text-gray-900 w-48 font-medium">{label}</td>
+      <td className="px-3 py-2 border-b text-gray-900">{children}</td>
     </tr>
   );
 }
