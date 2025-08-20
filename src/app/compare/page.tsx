@@ -1,6 +1,8 @@
 // src/app/compare/page.tsx
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
+import { RemoveButton, ClearAllButton } from './compare-controls';
+
 
 type Shoe = {
     brand: string;
@@ -83,30 +85,41 @@ export default async function ComparePage(
     const rows = (data ?? []) as Row[];
     const map = new Map(rows.map((r) => [r.id, r]));
     const cols = ids.map((id) => map.get(id)).filter(Boolean) as Row[];
+    const backToListHref = `/shoes${ids.length ? `?ids=${ids.join(',')}` : ''}`;
+
 
     return (
         <div className="p-6">
-            <div className="mb-4">
-                <Link href="/shoes" className="text-blue-600 underline">← Back to list</Link>
-            </div>
+            <div className="mb-4 flex items-center justify-between">
+  <Link href={backToListHref} className="text-blue-700 underline">← Back to list</Link>
+  <ClearAllButton />
+</div>
 
-            <h1 className="text-2xl font-semibold mb-4">Compare Shoes</h1>
+<h1 className="text-2xl font-semibold mb-4">Compare Shoes</h1>
 
-            <div className="overflow-x-auto rounded-lg border">
-                <table className="min-w-[900px] w-full text-sm">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <Th>Spec</Th>
-                            {cols.map((c) => {
-                                const s = firstOrNull(c.shoes);
-                                return (
-                                    <Th key={c.id}>
-                                        {s?.brand ?? '—'} {s?.model_name ?? '—'} {c.version_name ? `(${c.version_name})` : ''}
-                                    </Th>
-                                );
-                            })}
-                        </tr>
-                    </thead>
+
+            <div className="overflow-x-auto rounded-lg border border-gray-300">
+  <table className="min-w-[900px] w-full text-[15px] leading-6 text-gray-900">
+
+                    <thead className="bg-gray-100 text-gray-900">
+  <tr>
+    <Th>Spec</Th>
+    {cols.map((c) => {
+      const s = firstOrNull(c.shoes);
+      return (
+        <Th key={c.id}>
+          <div className="flex items-center gap-2">
+            <span className="font-medium">
+              {s?.brand ?? '—'} {s?.model_name ?? '—'} {c.version_name ? `(${c.version_name})` : ''}
+            </span>
+            <RemoveButton id={c.id} />
+          </div>
+        </Th>
+      );
+    })}
+  </tr>
+</thead>
+
                     <tbody>
                         <SpecRow label="Release Year" values={cols.map((c) => c.release_year ?? null)} unit="" />
                         <SpecRowText label="Terrain" values={cols.map((c) => firstOrNull(c.shoes)?.terrain ?? '')} />
@@ -124,8 +137,13 @@ export default async function ComparePage(
 }
 
 function Th({ children }: { children: React.ReactNode }) {
-    return <th className="px-3 py-2 text-left font-medium border-b border-gray-200">{children}</th>;
+  return (
+    <th className="px-4 py-2.5 text-left font-semibold border-b border-gray-300">
+      {children}
+    </th>
+  );
 }
+
 
 function SpecRow({
     label,
@@ -138,9 +156,9 @@ function SpecRow({
 }) {
     return (
         <tr className="odd:bg-white even:bg-gray-50">
-            <td className="px-3 py-2 border-b border-gray-200 w-48 font-medium">{label}</td>
+            <td className="px-4 py-2.5 border-b border-gray-200 w-56 font-medium">{label}</td>
             {values.map((v, i) => (
-                <td key={i} className="px-3 py-2 border-b border-gray-200">
+                <td key={i} className="px-4 py-2.5 border-b border-gray-200">
                     {fmt(v, unit)}
                 </td>
             ))}
