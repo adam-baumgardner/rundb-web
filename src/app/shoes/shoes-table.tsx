@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import useCompare, { CompareBar } from './compare-picker';
 
 export type UiRow = {
   id: string;
@@ -24,8 +25,12 @@ type SortKey = keyof UiRow;
 type SortDir = 'asc' | 'desc';
 
 export default function ShoesTable({ rows }: Props) {
+  // ⬇️ HOOKS MUST BE AT TOP LEVEL
   const [sortKey, setSortKey] = useState<SortKey>('brand');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
+
+  // ⬇️ compare hook at top level (NOT inside callbacks/loops)
+  const { ids, toggle, compareHref } = useCompare();
 
   const sorted = useMemo(() => {
     const copy = [...rows];
@@ -59,13 +64,7 @@ export default function ShoesTable({ rows }: Props) {
     }
   }
 
-  function Th({
-    label,
-    k,
-  }: {
-    label: string;
-    k: SortKey;
-  }) {
+  function Th({ label, k }: { label: string; k: SortKey }) {
     const active = sortKey === k;
     const arrow = active ? (sortDir === 'asc' ? '▲' : '▼') : '↕';
     return (
@@ -87,7 +86,7 @@ export default function ShoesTable({ rows }: Props) {
   };
 
   return (
-    <div className="overflow-x-auto rounded-lg border">
+    <div className="overflow-x-auto rounded-lg border relative">
       <table className="min-w-[1040px] w-full text-sm">
         <thead className="bg-gray-50 text-gray-700">
           <tr>
@@ -108,29 +107,40 @@ export default function ShoesTable({ rows }: Props) {
           </tr>
         </thead>
         <tbody>
-          {sorted.map((r) => (
-            <tr key={r.id} className="odd:bg-white even:bg-gray-50">
-              <td className="px-3 py-2 border-b border-gray-200">{fmt.text(r.brand)}</td>
-              <td className="px-3 py-2 border-b border-gray-200">{fmt.text(r.model)}</td>
-              <td className="px-3 py-2 border-b border-gray-200">{fmt.text(r.version)}</td>
-              <td className="px-3 py-2 border-b border-gray-200">{fmt.year(r.year)}</td>
-              <td className="px-3 py-2 border-b border-gray-200 capitalize">{fmt.text(r.terrain)}</td>
-              <td className="px-3 py-2 border-b border-gray-200 capitalize">{fmt.text(r.category)}</td>
-              <td className="px-3 py-2 border-b border-gray-200">{fmt.g(r.weight_men)}</td>
-              <td className="px-3 py-2 border-b border-gray-200">{fmt.g(r.weight_women)}</td>
-              <td className="px-3 py-2 border-b border-gray-200">{fmt.mm(r.heel)}</td>
-              <td className="px-3 py-2 border-b border-gray-200">{fmt.mm(r.forefoot)}</td>
-              <td className="px-3 py-2 border-b border-gray-200">{fmt.mm(r.drop)}</td>
-              <td className="px-3 py-2 border-b border-gray-200">
-                <Link className="text-blue-600 underline" href={`/shoes/${r.id}`}>
-                  Details
-                </Link>
-                {/* Compare CTA can be added later */}
-              </td>
-            </tr>
-          ))}
+          {sorted.map((r) => {
+            const selected = ids.includes(r.id);
+            return (
+              <tr key={r.id} className="odd:bg-white even:bg-gray-50">
+                <td className="px-3 py-2 border-b border-gray-200">{fmt.text(r.brand)}</td>
+                <td className="px-3 py-2 border-b border-gray-200">{fmt.text(r.model)}</td>
+                <td className="px-3 py-2 border-b border-gray-200">{fmt.text(r.version)}</td>
+                <td className="px-3 py-2 border-b border-gray-200">{fmt.year(r.year)}</td>
+                <td className="px-3 py-2 border-b border-gray-200 capitalize">{fmt.text(r.terrain)}</td>
+                <td className="px-3 py-2 border-b border-gray-200 capitalize">{fmt.text(r.category)}</td>
+                <td className="px-3 py-2 border-b border-gray-200">{fmt.g(r.weight_men)}</td>
+                <td className="px-3 py-2 border-b border-gray-200">{fmt.g(r.weight_women)}</td>
+                <td className="px-3 py-2 border-b border-gray-200">{fmt.mm(r.heel)}</td>
+                <td className="px-3 py-2 border-b border-gray-200">{fmt.mm(r.forefoot)}</td>
+                <td className="px-3 py-2 border-b border-gray-200">{fmt.mm(r.drop)}</td>
+                <td className="px-3 py-2 border-b border-gray-200">
+                  <button
+                    className={`mr-3 text-sm underline ${selected ? 'text-red-600' : 'text-blue-600'}`}
+                    onClick={() => toggle(r.id)}
+                  >
+                    {selected ? 'Remove' : 'Compare'}
+                  </button>
+                  <Link className="text-sm underline text-blue-600" href={`/shoes/${r.id}`}>
+                    Details
+                  </Link>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
+
+      {/* Sticky compare bar */}
+      <CompareBar ids={ids} compareHref={compareHref} />
     </div>
   );
 }
