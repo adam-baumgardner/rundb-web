@@ -37,28 +37,20 @@ function fmt(n: number | null, unit: 'g' | 'mm' | '') {
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-function isPromiseLike<T>(v: unknown): v is Promise<T> {
-    return typeof v === 'object' && v !== null && 'then' in (v as { then?: unknown });
-}
+export default async function ComparePage(
+  { searchParams }: { searchParams: Promise<SearchParams> }
+) {
+  const sp = await searchParams;
 
-export default async function ComparePage(props: { searchParams?: unknown }) {
-    let sp: SearchParams | undefined;
+  const idsParam = sp.ids;
+  const idsStr =
+    typeof idsParam === 'string'
+      ? idsParam
+      : Array.isArray(idsParam)
+      ? idsParam[0] ?? ''
+      : '';
 
-    if (isPromiseLike<SearchParams>(props.searchParams)) {
-        sp = await props.searchParams;
-    } else {
-        sp = props.searchParams as SearchParams | undefined;
-    }
-
-    const idsParam = sp?.ids;
-    const idsStr =
-        typeof idsParam === 'string'
-            ? idsParam
-            : Array.isArray(idsParam)
-                ? idsParam[0] ?? ''
-                : '';
-
-    const ids = idsStr.split(',').filter(Boolean).slice(0, 4);
+  const ids = idsStr.split(',').filter(Boolean).slice(0, 4);
 
     // Fetch the selected versions with joined shoe + specs
     const { data, error } = await supabase
